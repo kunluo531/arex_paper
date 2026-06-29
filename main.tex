@@ -1,0 +1,352 @@
+\PassOptionsToPackage{table,dvipsnames}{xcolor}
+\documentclass[]{selfevolagent}
+% Option "twocolumn" available, but please prioritize single-column
+
+% ===== Packages =====================================================
+\usepackage{microtype}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{xcolor}
+\usepackage{graphicx}     % \includegraphics, \resizebox
+\usepackage{booktabs}     % \toprule, \midrule, \bottomrule
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{xltabular}
+\usepackage{makecell}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{caption}
+\usepackage{enumitem}     % itemize options, e.g. [nosep,leftmargin=*]
+\usepackage{pifont}       % \ding symbols
+\usepackage{url}
+\usepackage[most]{tcolorbox} % colored callout boxes
+\usepackage{fontawesome5}    % \faIcon{...}
+\usepackage{algpseudocode}
+\usepackage[linesnumbered,lined,boxed,commentsnumbered,ruled,longend]{algorithm2e}
+\usepackage[T1]{fontenc}
+
+% TikZ (optional; remove if unused) ----------------------------------
+\usepackage{tikz}
+\usepackage[edges]{forest}
+\usetikzlibrary{
+  arrows.meta,
+  positioning,
+  calc,
+  shapes.symbols,
+  shapes.geometric,
+  shapes.misc
+}
+
+% ===== Theorem environments =========================================
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% ===== Colors =======================================================
+\definecolor{themecolor}{HTML}{37D2A6}        % primary accent
+\definecolor{themecolor_light}{HTML}{9BE9D3}
+\definecolor{themecolor_lighter}{HTML}{CDF4E9}
+
+% ===== Handy macros =================================================
+% Unnumbered footnote (e.g. for a project note on the first page)
+\newcommand\blfootnote[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
+% Check / cross marks for comparison tables
+\newcommand{\cmark}{\textcolor{green}{\ding{52}}}
+\newcommand{\xmark}{\textcolor{red}{\ding{56}}}
+% Link helpers (GitHub / Website icons)
+\newcommand{\ghlink}[1]{\faIcon{github}\,\href{#1}{GitHub}}
+\newcommand{\weblink}[1]{\faIcon{globe}\,\href{#1}{Website}}
+
+% ===== Title / authors / metadata ===================================
+\title{AREX: Efficient Long-Horizon Reasoning with Autonomous Context Management for Deep Research}
+% Alternative titles to consider:
+% \title{Autonomous Optimization Arena: Can Agents Improve the Artifacts They Run On?}
+% \title{Benchmarking Autonomous Optimization Across Harnesses, Policies, Kernels, and Algorithms}
+
+\author{Team of AREX}
+
+\affiliation{
+\vspace{0.5em}
+Beijing Academy of Artificial Intelligence (BAAI)
+}
+\vspace{0.5em}
+
+% $^{\dagger}$Equal contribution.
+% $^{\ast}$Corresponding author.}
+
+\abstract{
+\begin{abstract}
+% TODO: draft — revise once experiments are in.
+
+
+\end{abstract}
+}
+
+% Optional metadata lines shown in the title box
+\metadata[\faEnvelope\ Correspondence]{zhengliu1026@gmail.com}  % TODO: replace with real email
+\metadata[{\raisebox{-0.2ex}{\includegraphics[height=1em]{img/github-mark.png}}\ Code}]{\url{https://github.com/your-org/your-repo}}
+
+% ===================================================================
+\begin{document}
+
+\maketitle
+
+% \blfootnote{Optional first-page note.}
+
+% Example teaser figure (uncomment and supply img/teaser.pdf)
+% \begin{figure}[!t]
+%     \centering
+%     \includegraphics[width=\linewidth]{img/teaser.pdf}
+%     \caption{Teaser figure caption.}
+%     \label{fig:teaser}
+% \end{figure}
+
+
+\section{Introduction}
+\label{sec:intro}
+
+
+Recent advances in large language models (LLMs) have significantly improved their reasoning, instruction-following, and tool-use capabilities. However, many real-world information-seeking tasks, such as open-web research, scientific analysis, financial reasoning, and paper-based investigation, require more than isolated problem solving. Solving these tasks typically involves long-horizon reasoning, iterative tool interaction, evidence verification, and the ability to maintain and reorganize task-relevant context across many intermediate steps.
+
+These requirements have motivated the development of deep research agents, where language models interact with external tools and knowledge sources to solve complex tasks through multi-step reasoning and decision making. Existing systems have demonstrated promising results by scaling up inference-time computation, increasing the number of tool interactions, or using manually designed context truncation and summarization rules. Nevertheless, longer reasoning trajectories do not automatically lead to better performance. When the model lacks strong step-level reasoning and tool-use capabilities, additional interactions may introduce noise, propagate earlier mistakes, and increase computational cost without improving final answer quality.
+
+In this work, we argue that long-horizon research agents should be optimized not only for capability, but also for efficiency. Effective long-horizon reasoning requires each interaction step to be informative, reliable, and grounded. This is particularly important for practical deployment, where extremely large models and excessive inference-time interaction can be prohibitively expensive. Motivated by this observation, we introduce \textsc{AREX}, a family of efficient deep research models designed to strengthen reasoning and tool-use capabilities at small and medium model scales. \textsc{AREX} provides two model variants: a dense \textbf{4B} model and a \textbf{100B} Mixture-of-Experts model with \textbf{10B} activated parameters. Despite their efficient parameter scales, both variants achieve substantial improvements over comparable models across a broad set of reasoning and tool-use benchmarks, including \textbf{[BrowseComp]}, \textbf{[HLE]}, \textbf{[HLE with Tools]}, \textbf{[WideSearch]}, and \textbf{[OTHER BENCHMARKS]}. In several settings, \textsc{AREX} approaches or matches the performance of models with significantly larger parameter counts.
+
+A key challenge in long-horizon research is context management. Previous systems often rely on hand-crafted inference-time rules to truncate, compress, or summarize context. While effective in specific settings, such manually designed strategies can be inflexible, task-dependent, and difficult to scale to diverse research scenarios. In contrast, \textsc{AREX} treats context management as an explicit agentic capability. We introduce context management tools that allow the model to autonomously write, update, retrieve, and organize intermediate research states during problem solving. Rather than depending solely on fixed truncation heuristics, the model learns when to preserve evidence, when to compress intermediate reasoning, and when to retrieve previously stored information. We further strengthen this behavior during training, enabling the model to manage long research trajectories in a more flexible and adaptive manner.
+
+To train \textsc{AREX}, we design an effective multi-stage recipe for long-horizon tasks requiring both strong reasoning and reliable tool interaction. The training pipeline combines capability-oriented synthetic data construction, supervised fine-tuning, agentic reinforcement learning, and mixed-domain consolidation. The training data is designed around the capability profiles of deep research, wide research, paper research, and expert verification tasks, while maintaining strict separation from public benchmark evaluation instances. Through this progressive training process, the model first acquires fundamental tool-use and reasoning skills, then improves browse-intensive evidence acquisition and expert-level verification, and finally consolidates these abilities across mixed research scenarios.
+
+Our main contributions are summarized as follows:
+\begin{itemize}
+\item We introduce \textsc{AREX}, an efficient deep research model family with dense 4B and MoE 100B-total/10B-active variants, showing that strong long-horizon reasoning and tool-use performance can be achieved without relying exclusively on extremely large activated parameter counts.
+\item We formulate context management as a learnable agentic capability. By exposing the model to context management tools during training, \textsc{AREX} learns to autonomously organize, update, and retrieve intermediate research states over long interaction trajectories.
+\item We present a multi-stage training recipe for deep research scenarios, covering capability-oriented synthetic data construction, supervised fine-tuning, reinforcement learning, and mixed-domain consolidation across deep research, wide research, paper research, and expert verification tasks.
+\item We evaluate \textsc{AREX} on a broad set of reasoning and tool-use benchmarks, including \textbf{[BENCHMARKS]}, and show consistent improvements over same-scale baselines, with competitive performance against substantially larger models.
+\end{itemize}
+
+Overall, \textsc{AREX} demonstrates that effective long-horizon research agents can be built by jointly improving step-level reasoning, tool-use reliability, autonomous context management, and training efficiency. These results suggest a promising path toward practical deep research systems that are not only capable, but also efficient, adaptive, and scalable.
+
+
+\section{Related Works}
+
+\paragraph{Large Language Models.}
+Large language models have achieved substantial progress in general reasoning, instruction following, code generation, and tool-augmented problem solving~\cite{gpt4,claude,gemini,deepseekr1,qwen,llama}. Recent reasoning-oriented models further demonstrate that post-training techniques, including supervised fine-tuning, preference optimization, reinforcement learning, and test-time computation scaling, can significantly improve performance on complex mathematical, coding, and knowledge-intensive tasks~\cite{openai_o1,deepseekr1,kimi_k15}. In parallel, efficient model architectures such as Mixture-of-Experts models have made it possible to improve model capacity while keeping activated parameters and inference cost relatively low~\cite{switch_transformer,gshard,mixtral,deepseekv3}. Despite these advances, many frontier reasoning models still rely on very large activated parameter counts or expensive inference-time reasoning to solve difficult tasks. In contrast, \textsc{AREX} focuses on improving long-horizon reasoning and tool-use ability at efficient model scales. By providing both a dense 4B model and a 100B-total/10B-active MoE model, \textsc{AREX} studies how strong research-agent capabilities can be obtained under practical inference budgets, while remaining competitive with significantly larger models on reasoning and tool-use benchmarks.
+
+\paragraph{Agentic Deep Research Agents.}
+Recent work on agentic AI systems extends language models from single-turn response generation to multi-step problem solving with tools, environments, and external knowledge sources~\cite{react,toolformer,webgpt,deepresearch,searchr1,webdancer,websailor,tongyi_deepresearch,minddr}. These systems are particularly important for deep research tasks, where the model must iteratively search, browse, read, verify, and synthesize information across long interaction trajectories. Existing deep research agents typically improve performance through better tool-use supervision, trajectory sampling, agentic supervised fine-tuning, and reinforcement learning~\cite{webdancer,websailor,tongyi_deepresearch,minddr}. However, long-horizon research also introduces a key challenge: the model must maintain task-relevant context over many reasoning and tool-use steps. Prior systems often address this issue with manually designed context truncation, compression, or summarization rules, which can be brittle and task-dependent. \textsc{AREX} instead treats context management as a learnable agentic capability. By exposing the model to explicit context management tools and training it to autonomously update, retrieve, and organize intermediate research states, \textsc{AREX} aims to make long-horizon research more adaptive, efficient, and scalable across deep research, wide research, paper research, and future autonomous research scenarios.
+
+
+\section{AREX Framework Overview}
+
+\subsection{Task Formulation}
+
+\textsc{AREX} is designed for long-horizon research and reasoning tasks that require different degrees of internal reasoning and external information acquisition. Given a user query $x$, the model is expected to produce a final answer $y$ through either direct reasoning or tool-augmented research.
+
+We consider three major task forms. First, in expert reasoning tasks such as \textbf{[HLE-like tasks]}, the model may solve the problem primarily through internal reasoning, without relying on external retrieval. These tasks emphasize deep thinking, hypothesis comparison, and precise answer selection. Second, in deep research tasks, the model must iteratively search, browse, verify, and synthesize information from external sources before producing an answer. Third, in wide research tasks, the model is required to explore a broader information space, compare multiple candidate sources or entities, and aggregate evidence across diverse documents.
+
+We formulate all these tasks under a unified agentic decision process. At each step $t$, the model observes the current state $s_t$, which consists of the original query, previous reasoning, tool calls, tool observations, and optionally a compressed research context. The model then selects an action $a_t$ from a set of native tools or generates a final answer. A trajectory can be written as
+$$
+[
+\tau = (x, a_1, o_1, a_2, o_2, \ldots, a_T, o_T),
+]
+$$
+where $a_t$ denotes a model action and $o_t$ denotes the corresponding tool observation. The objective is to produce a correct, well-grounded, and evidence-supported final answer within a bounded interaction budget.
+
+\subsection{Native Tool Interface}
+
+\textsc{AREX} interacts with the environment through a compact set of native tools. These tools define the model's action space during both training and inference.
+
+\paragraph{Search.}
+The \texttt{search} tool performs web search given a query string and returns the top retrieved results. Each result contains a temporary document identifier, source domain, and a document snippet. This tool allows the model to explore the external information space, locate candidate sources, and refine its search strategy over multiple rounds.
+
+\paragraph{Open Page.}
+The \texttt{open\_page} tool opens a retrieved document by its document identifier. In addition to the document identifier, the model provides an explicit information need, describing what it expects to extract from the page. This design encourages goal-directed reading rather than passive page opening, and allows the reading component to focus on task-relevant information.
+
+\paragraph{Update Context.}
+The \texttt{update\_context} tool allows the model to autonomously compress the current research trajectory into a high-density context state. This tool is used when the trajectory becomes too long, when the current reasoning path becomes cluttered, or when the model completes a meaningful subtask and needs to preserve intermediate progress before moving to the next stage. The updated context must retain confirmed knowledge, supporting document identifiers, current research state, next-step plans, and optionally failed attempts or negative constraints.
+
+\paragraph{Finish.}
+The \texttt{finish} tool terminates the research process and returns the final answer. Unlike ordinary answer generation, \texttt{finish} requires the model to provide not only the answer, but also supporting evidence and a confidence score. Each evidence item must be associated with exactly one document identifier. This evidence-grounded termination interface discourages unsupported final answers and makes the final response easier to verify.
+
+\subsection{Autonomous Context Management}
+
+A central design choice of \textsc{AREX} is to treat context management as a learnable agentic capability rather than a hand-crafted inference-time heuristic. Long-horizon research trajectories can easily exceed the effective context window or become polluted by irrelevant observations, repeated searches, and abandoned hypotheses. Prior systems often address this issue with manually designed truncation, compression, or summarization rules. Such strategies are task-dependent and may discard subtle but important intermediate information.
+
+In contrast, \textsc{AREX} exposes context management as an explicit tool action. The model can decide when the current trajectory should be compressed, what information should be preserved, and how the updated state should guide subsequent research. Importantly, this process does not require invoking an additional summarization model. The same policy model that performs reasoning and tool use is also responsible for maintaining its own research state.
+
+The \texttt{update\_context} tool follows strict requirements. The generated context must be a compact but loss-preserving distillation of the current trajectory. It should preserve verified facts together with their document identifiers, summarize the current research state, specify next-step plans, and record failed directions when useful. This design allows the model to continue long-horizon research after context refresh while preserving evidence traceability for final verification.
+
+Formally, let $h_t$ denote the full interaction history up to step $t$. When the model invokes \texttt{update\_context}, it produces a compressed state $c_t = f_{\theta}(h_t)$, where $c_t$ replaces or summarizes part of the previous history. The subsequent policy is then conditioned on the refreshed state:
+$$
+[
+a_{t+1} \sim \pi_{\theta}(\cdot \mid x, c_t, o_{\leq t}).
+]
+$$
+This mechanism allows \textsc{AREX} to scale to longer research trajectories while reducing context redundancy and preserving task-relevant evidence.
+
+\subsection{Evidence-grounded Termination}
+
+For research tasks, a final answer is only useful if it is supported by verifiable evidence. Therefore, \textsc{AREX} uses a structured termination action rather than free-form answer generation. When invoking \texttt{finish}, the model must output:
+\begin{itemize}
+\item a succinct final answer;
+\item a list of supporting evidence statements;
+\item the document identifier supporting each evidence statement;
+\item a confidence score.
+\end{itemize}
+
+This design has two advantages. First, it forces the model to explicitly connect its answer to retrieved evidence, reducing the likelihood of hallucinated or weakly grounded responses. Second, it provides a natural interface for automatic verification. For example, the system can check whether the evidence list is empty, whether cited document identifiers are valid, and whether the confidence score is sufficiently high.
+
+\subsection{Test-time Scaling and Verification}
+
+During inference, \textsc{AREX} supports test-time scaling through repeated independent research attempts. For difficult long-horizon tasks, a single trajectory may fail due to early search mistakes, noisy observations, or incorrect intermediate hypotheses. Instead of always continuing from a potentially corrupted trajectory, we adopt a \textbf{discard-all} strategy. When an attempt is judged unreliable, the entire trajectory is discarded and the model restarts from the original query with a fresh context.
+
+We combine this strategy with confidence-based verification. After the model invokes \texttt{finish}, the system checks the returned confidence score and evidence structure. If the confidence is below a predefined threshold $\tau$, or if the evidence is incomplete or invalid, the result is considered unreliable and a new attempt is launched, subject to the remaining inference budget. This strategy reduces the risk of committing to low-confidence answers and provides a simple mechanism for scaling inference-time computation.
+
+The total number of tool calls is limited to \textbf{[300]} per task. This budget includes search, page opening, context updating, and finalization actions. Under this constraint, \textsc{AREX} must balance exploration, evidence verification, context compression, and answer generation. The final answer is selected from successful attempts according to \textbf{[SELECTION RULE, e.g., confidence score, verifier score, or evidence consistency]}.
+
+\subsection{Discussion}
+
+The AREX framework is designed around three principles. First, long-horizon research should be efficient: the model should improve the quality of each interaction step rather than relying solely on longer trajectories or larger models. Second, context management should be adaptive and model-controlled, allowing the agent to decide when and how to compress its own research state. Third, final answers should be evidence-grounded and verifiable, especially in tasks requiring external information acquisition.
+
+Together, these components provide a unified framework for expert reasoning, deep research, wide research, and future autonomous research settings.
+
+
+
+\subsection{Data Construction}
+
+
+Problem Synthesis in different domain
+
+Trajectory collection different domain
+
+Data Filtering and Quality Control
+
+\section{Multi-stage Agentic Mid-training}
+
+\subsection{Overview}
+
+Long-horizon deep research requires a combination of heterogeneous capabilities, including tool invocation, web navigation, evidence acquisition, expert-level reasoning, context tracking, and answer synthesis. Directly training the model on a single mixed distribution may lead to unstable learning dynamics and interference across different capability types. We therefore adopt a multi-stage agentic mid-training recipe that progressively improves the model's research ability.
+
+The training process consists of three major stages. First, we train the model on browse-intensive research trajectories to establish fundamental tool-use and evidence acquisition capabilities. Second, we train the model on expert reasoning trajectories to strengthen long-form thinking, hypothesis comparison, and difficult problem solving. Third, we perform mixed-capability consolidation by replaying browse-intensive data and mixing additional task families, including general question answering, academic paper research, wide search, and other deep research tasks. This final stage restores and further strengthens the model's general research capability across diverse scenarios.
+
+\subsection{Progressive Capability Acquisition}
+
+In the first stage, we focus on browse-intensive trajectory supervision. These trajectories require the model to interact with external tools, issue effective search queries, read retrieved documents, identify relevant evidence, and synthesize the final answer. This stage provides the model with a basic agentic policy for tool use and web navigation.
+
+In the second stage, we train the model on expert-level reasoning data. Compared with browse-intensive tasks, these examples place greater emphasis on deep thinking, multi-step deduction, hypothesis verification, and careful answer selection. This stage improves the model's ability to reason over difficult problems and maintain coherent intermediate conclusions over longer trajectories.
+
+Although the second stage improves reasoning ability, we observe that excessive specialization on expert reasoning data may weaken previously acquired browsing and tool-use behaviors. To mitigate this capability interference, we introduce a mixed-capability consolidation stage. In this stage, we replay browse-intensive trajectories and mix them with additional training data from general question answering, academic paper research, and open-ended deep research tasks. This stage encourages the model to unify reasoning, tool use, document reading, and answer synthesis under a shared research protocol.
+
+\subsection{Key-step Focused Supervision}
+
+A distinctive challenge in long-horizon research training is that supervision is not uniformly informative across all trajectory steps. In a complete research trajectory, many steps are routine transitions, while a small number of steps correspond to critical research decisions, such as discovering the answer-related entity, changing the search direction, rejecting an incorrect hypothesis, or connecting evidence to the target question. These steps often determine whether the trajectory eventually succeeds.
+
+Training on full trajectories treats all assistant tokens in a successful trajectory as supervision, but this may dilute the learning signal from high-value decision points. To address this issue, we introduce key-step focused supervision. We first identify candidate key steps using high-precision rule-based detectors. These detectors target semantically meaningful research events, such as:
+\begin{itemize}
+\item the first tool invocation whose search results or webpage observations contain an answer-related entity after multiple exploratory steps;
+\item the first step where the model rejects previously explored incorrect entities and starts investigating the answer-related entity;
+\item the first step that forms or verifies a decisive hypothesis required for the final answer;
+\item the first step that links a key piece of evidence to the constraints in the user query.
+\end{itemize}
+
+These rules are not intended to fully solve step-level credit assignment. Instead, they serve as high-precision proxies for identifying informative decision points in long research trajectories.
+
+To verify whether these detected steps are indeed difficult for the model to learn, we perform a step-level loss analysis after full-trajectory training. For each assistant step $s_j$ in a trajectory, we compute the average token loss:
+$$
+[
+\ell(s_j) =
+-\frac{1}{|s_j|}
+\sum_{k=1}^{|s_j|}
+\log \pi_{\theta}(a_{j,k} \mid c_{j,k}),
+]
+$$
+where $a_{j,k}$ denotes the $k$-th assistant token in step $s_j$, and $c_{j,k}$ is its preceding context. We find that the detected key steps consistently have substantially higher loss than ordinary trajectory steps. This suggests that even after full-trajectory supervision, the model still underfits the most informative and decision-critical parts of the trajectory.
+
+Based on this observation, we construct a key-step training set. For each selected key step, we preserve its full preceding context so that the model is trained under the correct trajectory state. However, the loss is applied only to the key step itself, while the prefix tokens, user messages, and tool observations are masked out. The key-step objective is:
+$$
+[
+\mathcal{L}_{\text{key}} =
+-\mathbb{E}*{s_j \in \mathcal{K}}
+\left[
+\frac{1}{|s_j|}
+\sum*{k=1}^{|s_j|}
+\log \pi_{\theta}(a_{j,k} \mid c_{j,k})
+\right],
+]
+$$
+where $\mathcal{K}$ denotes the set of selected key steps.
+
+This design preserves the state distribution of the original trajectory while concentrating the optimization signal on high-value research decisions. Empirically, adding key-step focused supervision after full-trajectory training further improves the model's performance on long-horizon deep research tasks, indicating that selective supervision over informative decision points can improve the efficiency of agentic mid-training.
+
+
+
+
+\section{Experiments}
+
+\subsection{Experimental Setup}
+
+- Evaluation Benchmarks.
+- Evaluation Protocol
+
+
+\subsection{Overall Performance}
+
+10b
+
+4b
+
+\subsection{Professional-domain Performance}
+
+
+\subsection{Inference Framework}
+
+context management
+
+confidence
+
+Test Time Scaling
+
+
+\subsection{Exploration Experiment}
+
+can move to appendix
+
+\noindent \textbf{Self Distillation}
+
+% self distillation
+
+% merge model
+
+\noindent \textbf{Model Merging} Model merging, which integrates the parameters of multiple fine‑tuned models into a single unified model without requiring additional training or access to original data, has emerged as a computationally efficient paradigm for combining capabilities across diverse tasks (see, e.g., recent works on model merging and task arithmetic). In the context of LLM‑based Agents, this technique offers a lightweight pathway to equip a single model with multi‑task and cross‑environment generalisation abilities, circumventing the high computational cost of joint training or the storage overhead of maintaining separate expert checkpoints. However, directly applying standard merging strategies—such as simple parameter averaging—to Agent models trained via reinforcement learning is non‑trivial, because the resulting task vectors tend to be sparse and heterogeneous, making it difficult to preserve task‑specific skills. Moreover, the interactive, multi‑turn nature of Agent decision‑making introduces additional complexity that existing merging approaches are not specifically designed to handle.
+
+
+\section{Agentic Reinforcement Learning}
+
+GRPO
+
+PPO
+
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+
+\bibliographystyle{assets/plainnat}
+\bibliography{citation}
+\clearpage
+\end{document}
